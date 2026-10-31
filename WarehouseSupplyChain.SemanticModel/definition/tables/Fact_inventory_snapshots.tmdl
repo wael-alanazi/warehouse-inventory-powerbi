@@ -1,0 +1,170 @@
+table Fact_inventory_snapshots
+	lineageTag: 10b1a14b-3542-48a9-a2d1-ee63453d1db0
+
+	column snapshot_id
+		dataType: string
+		lineageTag: 1cdc10cd-6d5f-4aa6-8c2f-1ce55513ea0c
+		summarizeBy: none
+		sourceColumn: snapshot_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column snapshot_month
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: 7528b2d0-f486-426f-afbe-cfd812dbd108
+		summarizeBy: none
+		sourceColumn: snapshot_month
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column month_end_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 05610bf6-d314-4e12-992c-5dbe6cc0678e
+		summarizeBy: none
+		sourceColumn: month_end_date
+
+		variation Variation
+			isDefault
+			relationship: 3ddccbe6-be79-49d8-974e-7207a74ba5cf
+			defaultHierarchy: LocalDateTable_b5b5ed9c-c056-47e5-a707-562ca289ca21.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column warehouse_id
+		dataType: string
+		isHidden
+		lineageTag: ca2be1b6-80e1-4add-b972-71b7670c91c0
+		summarizeBy: none
+		sourceColumn: warehouse_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sku_id
+		dataType: string
+		isHidden
+		lineageTag: d551703b-6e31-40d2-97ed-5b3715dc1d43
+		summarizeBy: none
+		sourceColumn: sku_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column opening_quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 259200c0-4f11-433a-9025-5116df6b717c
+		summarizeBy: sum
+		sourceColumn: opening_quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column receipts_quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: e212be88-2bc4-4ca0-9818-bcc5d4776942
+		summarizeBy: sum
+		sourceColumn: receipts_quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column issues_quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 46659f7b-76b3-424e-8849-853b63e2d6ac
+		summarizeBy: sum
+		sourceColumn: issues_quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column adjustments_quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: b1ff70ea-140b-435e-9e37-330d9cb8f160
+		summarizeBy: sum
+		sourceColumn: adjustments_quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column closing_quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 72a2cdcd-67b3-4245-ae93-5bea8911c269
+		summarizeBy: sum
+		sourceColumn: closing_quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column closing_value_usd
+		dataType: double
+		lineageTag: 4b673a78-6aeb-4ffc-b876-f917c058bf57
+		summarizeBy: sum
+		sourceColumn: closing_value_usd
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column reorder_point
+		dataType: int64
+		formatString: 0
+		lineageTag: 84e91900-7893-48bf-ac3d-36cd91fdb798
+		summarizeBy: sum
+		sourceColumn: reorder_point
+
+		annotation SummarizationSetBy = Automatic
+
+	column below_reorder_point
+		dataType: string
+		lineageTag: 6a8999f9-83fe-4038-ad81-ceb9ddcba2a1
+		summarizeBy: none
+		sourceColumn: below_reorder_point
+
+		annotation SummarizationSetBy = Automatic
+
+	column stockout_days
+		dataType: int64
+		formatString: 0
+		lineageTag: 6c6cfb09-89f8-4df6-901d-f78e6cbc1caf
+		summarizeBy: sum
+		sourceColumn: stockout_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column days_of_cover
+		dataType: double
+		lineageTag: b7158357-2175-413d-82da-0886b153291f
+		summarizeBy: sum
+		sourceColumn: days_of_cover
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition Fact_inventory_snapshots = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "inventory_snapshots.csv"),[Delimiter=",", Columns=16, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type with Locale" = Table.TransformColumnTypes(#"Promoted Headers", {{"snapshot_month", type date}, {"month_end_date", type date}}, "en-GB"),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Changed Type with Locale",{{"opening_quantity", Int64.Type}, {"receipts_quantity", Int64.Type}, {"issues_quantity", Int64.Type}, {"adjustments_quantity", Int64.Type}, {"closing_quantity", Int64.Type}, {"reorder_point", Int64.Type}, {"stockout_days", Int64.Type}, {"closing_value_usd", type number}, {"days_of_cover", type number}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"abc_class"})
+				in
+				    #"Removed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

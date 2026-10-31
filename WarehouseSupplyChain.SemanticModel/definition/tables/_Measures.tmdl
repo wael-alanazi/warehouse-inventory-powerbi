@@ -1,0 +1,282 @@
+table _Measures
+	lineageTag: a0825cb1-e2cb-4450-b0c1-bea9cb5f2e75
+
+	measure 'Total Scrap Qty' = ```
+			
+			        - CALCULATE (
+			            SUM ( Fact_stock_movements[quantity] ),
+			            Fact_stock_movements[movement_type] = "Scrap"
+			        )
+			```
+		formatString: 0
+		displayFolder: 01 Movements
+		lineageTag: ca6c34a5-a926-4d8d-851c-0ad6249e5147
+
+	measure 'Net Adjustments Qty' = ```
+			
+			        CALCULATE (
+			            SUM ( Fact_stock_movements[quantity] ),
+			            Fact_stock_movements[movement_type] = "Adjustment"
+			        )
+			```
+		formatString: 0
+		displayFolder: 01 Movements
+		lineageTag: 9ad82915-a176-402a-8319-7754814caf6d
+
+	measure 'Net Stock Change Qty' = ```
+			
+			        SUM ( Fact_stock_movements[quantity] )
+			```
+		formatString: 0
+		displayFolder: 01 Movements
+		lineageTag: d07bcd3a-34b7-4afd-a649-75cb028a25a7
+
+	measure 'Receipts Value USD' = ```
+			
+			        CALCULATE (
+			            SUM ( Fact_stock_movements[movement_value_usd] ),
+			            Fact_stock_movements[movement_type] = "Receipt"
+			        )
+			```
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: 01 Movements
+		lineageTag: 68eca6a9-c658-4fab-b3d7-d5fb830f4c1f
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	measure 'Issues Value USD' = ```
+			
+			        - CALCULATE (
+			            SUM ( Fact_stock_movements[movement_value_usd] ),
+			            Fact_stock_movements[movement_type] = "Issue"
+			        )
+			```
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: 01 Movements
+		lineageTag: ca5a26a4-b059-4bae-9200-0c30d9891d37
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	measure 'Scrap Value USD' = ```
+			
+			        - CALCULATE (
+			            SUM ( Fact_stock_movements[movement_value_usd] ),
+			            Fact_stock_movements[movement_type] = "Scrap"
+			        )
+			```
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: 01 Movements
+		lineageTag: 6878f818-b9b0-4b51-9a6b-b55f5972b7d6
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	measure 'Closing Stock Value' = ```
+			
+			        VAR LastMonth = MAX ( Fact_inventory_snapshots[snapshot_month] )
+			        RETURN
+			            CALCULATE (
+			                SUM ( Fact_inventory_snapshots[closing_value_usd] ),
+			                Fact_inventory_snapshots[snapshot_month] = LastMonth
+			            )
+			```
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: 02 Stock
+		lineageTag: 64a7df45-f73f-4c00-b067-8bdfb71a8f2b
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	measure 'SKUs Below Reorder' = ```
+			
+			        VAR LastMonth = MAX ( Fact_inventory_snapshots[snapshot_month] )
+			        RETURN
+			            CALCULATE (
+			                COUNTROWS ( Fact_inventory_snapshots ),
+			                Fact_inventory_snapshots[snapshot_month] = LastMonth,
+			                Fact_inventory_snapshots[below_reorder_point] = "Yes"
+			            )
+			```
+		formatString: 0
+		displayFolder: 02 Stock
+		lineageTag: d1d8cce4-5d36-4dfe-9892-069e444d0ef1
+
+	measure '% Below Reorder' = ```
+			
+			        VAR LastMonth = MAX ( Fact_inventory_snapshots[snapshot_month] )
+			        VAR AllItems =
+			            CALCULATE (
+			                COUNTROWS ( Fact_inventory_snapshots ),
+			                Fact_inventory_snapshots[snapshot_month] = LastMonth
+			            )
+			        RETURN
+			            DIVIDE ( [SKUs Below Reorder], AllItems )
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 02 Stock
+		lineageTag: f68e82c9-5357-4f57-bae7-db62e9b5b598
+
+	measure 'Avg Days of Cover' = ```
+			
+			        VAR LastMonth = MAX ( Fact_inventory_snapshots[snapshot_month] )
+			        RETURN
+			            CALCULATE (
+			                AVERAGE ( Fact_inventory_snapshots[days_of_cover] ),
+			                Fact_inventory_snapshots[snapshot_month] = LastMonth
+			            )
+			```
+		formatString: 0.00
+		displayFolder: 02 Stock
+		lineageTag: 3575e62f-be88-4a8c-acbe-94116b5446ea
+
+	measure 'SKUs No Demand' = ```
+			
+			        VAR LastMonth = MAX ( Fact_inventory_snapshots[snapshot_month] )
+			        RETURN
+			            CALCULATE (
+			                COUNTROWS ( Fact_inventory_snapshots ),
+			                Fact_inventory_snapshots[snapshot_month] = LastMonth,
+			                ISBLANK ( Fact_inventory_snapshots[days_of_cover] )
+			            )
+			```
+		formatString: 0
+		displayFolder: 02 Stock
+		lineageTag: e79791a6-4e9c-4e3d-a7cd-da3b012bb3ef
+
+	measure 'Total Stockout Days' = ```
+			
+			        SUM ( Fact_inventory_snapshots[stockout_days] )
+			```
+		formatString: 0
+		displayFolder: 03 Service
+		lineageTag: 5dd34ee0-9981-4a95-a8c2-e476115e4473
+
+	measure 'Stockout Item-Months' = ```
+			
+			        CALCULATE (
+			            COUNTROWS ( Fact_inventory_snapshots ),
+			            Fact_inventory_snapshots[stockout_days] > 0
+			        )
+			```
+		formatString: 0
+		displayFolder: 03 Service
+		lineageTag: e08b2b6f-5856-43cc-8b67-b6d24970fa4f
+
+	measure 'Stockout Rate %' = ```
+			
+			        DIVIDE (
+			            [Stockout Item-Months],
+			            COUNTROWS ( Fact_inventory_snapshots )
+			        )
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 03 Service
+		lineageTag: 18e2dbaf-766e-41cc-b708-4ce50091d777
+
+	measure 'Total Issues Qty PY' = ```
+			
+			        CALCULATE ( [Total Issues Qty], SAMEPERIODLASTYEAR ( Dim_Date[Date] ) )
+			```
+		formatString: 0
+		displayFolder: 04 Time intelligence
+		lineageTag: 13203123-becd-4374-b3d7-8d0a90232725
+
+	measure 'Issues YoY %' = ```
+			
+			        DIVIDE ( [Total Issues Qty] - [Total Issues Qty PY], [Total Issues Qty PY] )
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 04 Time intelligence
+		lineageTag: 032ddda8-a473-42ab-9b00-38dbbe3dd5d4
+
+	measure 'Closing Stock Qty PY' = ```
+			
+			        CALCULATE ( [Closing Stock Qty], SAMEPERIODLASTYEAR ( Dim_Date[Date] ) )
+			```
+		formatString: 0
+		displayFolder: 04 Time intelligence
+		lineageTag: 6a451da3-f54f-4317-a354-c1e2b1fcef4c
+
+	measure 'Closing Stock YoY %' = ```
+			
+			        DIVIDE ( [Closing Stock Qty] - [Closing Stock Qty PY], [Closing Stock Qty PY] )
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 04 Time intelligence
+		lineageTag: 50f5ee34-b665-4385-8845-4fee5cb14173
+
+	measure 'Closing Stock Qty' =
+			
+			VAR LastMonth = MAX ( Fact_inventory_snapshots[snapshot_month] )
+			RETURN
+			    CALCULATE (
+			        SUM ( Fact_inventory_snapshots[closing_quantity] ),
+			        Fact_inventory_snapshots[snapshot_month] = LastMonth
+			    )
+		formatString: 0
+		displayFolder: 02 Stock
+		lineageTag: 98848de4-ed5a-4ca9-b79a-f0e2a6aa2a07
+
+	measure 'Total Issues Qty' =
+			
+			- CALCULATE (
+			    SUM ( Fact_stock_movements[quantity] ),
+			    Fact_stock_movements[movement_type] = "Issue"
+			)
+		formatString: 0
+		displayFolder: 01 Movements
+		lineageTag: 005ad7d1-7774-4394-8f32-baacc95f333a
+
+	measure 'Total Receipts Qty' =
+			
+			CALCULATE (
+			    SUM ( Fact_stock_movements[quantity] ),
+			    Fact_stock_movements[movement_type] = "Receipt"
+			)
+		formatString: 0
+		displayFolder: 01 Movements
+		lineageTag: a7092d9a-279d-4e41-8bbf-3aa90cc2ae9e
+
+	measure 'Opening Stock Qty' =
+			VAR FirstMonth = MIN ( Fact_inventory_snapshots[snapshot_month] )
+			RETURN
+			    CALCULATE (
+			        SUM ( Fact_inventory_snapshots[opening_quantity] ),
+			        Fact_inventory_snapshots[snapshot_month] = FirstMonth
+			    )
+		formatString: #,0
+		displayFolder: 02 Stock
+		lineageTag: 5a6c8852-6d8d-4a86-82eb-834d2046bd0a
+
+	measure 'Stock Change %' = DIVIDE ( [Closing Stock Qty] - [Opening Stock Qty], [Opening Stock Qty] )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: 02 Stock
+		lineageTag: 9beca100-6862-4872-8fff-78449e0fb9bb
+
+	measure 'Avg Days per Stockout' = DIVIDE ( [Total Stockout Days], [Stockout Item-Months] )
+		formatString: 0.0
+		displayFolder: 03 Service
+		lineageTag: 42d8e707-4607-4771-8722-0802f601f7e0
+
+	column Column1
+		dataType: string
+		isHidden
+		lineageTag: 5a7ac767-019e-4ab6-9ce1-7117777e8ddc
+		summarizeBy: none
+		sourceColumn: Column1
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _Measures = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Column1", type text}})
+				in
+				    #"Changed Type"
+
+	changedProperty = Name
+
+	annotation PBI_ResultType = Table
+

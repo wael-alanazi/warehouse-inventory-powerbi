@@ -1,0 +1,130 @@
+table Dim_skus
+	lineageTag: 0be88d71-55c0-485a-a0f6-2b5d5f41102b
+
+	column sku_id
+		dataType: string
+		lineageTag: 0a5ffff1-3834-4174-ab2e-20292b73e175
+		summarizeBy: none
+		sourceColumn: sku_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sku_code
+		dataType: string
+		lineageTag: 77996624-f884-49b9-8d45-19a7c3601838
+		summarizeBy: none
+		sourceColumn: sku_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_name
+		dataType: string
+		lineageTag: 155ffb0e-895f-4f7b-9e93-c80ee17d0767
+		summarizeBy: none
+		sourceColumn: product_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column category
+		dataType: string
+		lineageTag: 472ad48c-56f6-4cd6-b3ab-63ff42b35a16
+		summarizeBy: none
+		sourceColumn: category
+
+		annotation SummarizationSetBy = Automatic
+
+	column subcategory
+		dataType: string
+		lineageTag: 1434cb19-fc33-449f-972a-252f9f87abc7
+		summarizeBy: none
+		sourceColumn: subcategory
+
+		annotation SummarizationSetBy = Automatic
+
+	column supplier_id
+		dataType: string
+		lineageTag: d599feb0-e8aa-4d6b-a4b3-87cae7568841
+		summarizeBy: none
+		sourceColumn: supplier_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column unit_cost_usd
+		dataType: double
+		lineageTag: d8f52efc-75e9-454a-8ef1-62c6b2dff88b
+		summarizeBy: sum
+		sourceColumn: unit_cost_usd
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column unit_price_usd
+		dataType: double
+		lineageTag: 42055ce1-f659-4d41-9442-9598fee80bb2
+		summarizeBy: sum
+		sourceColumn: unit_price_usd
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column unit_weight_kg
+		dataType: double
+		lineageTag: 1cc0bf64-296b-4c3a-b4c2-c42038062ccd
+		summarizeBy: sum
+		sourceColumn: unit_weight_kg
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column units_per_pallet
+		dataType: int64
+		formatString: 0
+		lineageTag: a4628c64-f71e-4b3c-a5e6-d627400c1193
+		summarizeBy: sum
+		sourceColumn: units_per_pallet
+
+		annotation SummarizationSetBy = Automatic
+
+	column abc_class
+		dataType: string
+		lineageTag: 568502ee-6a83-4726-8fef-04e3639f2684
+		summarizeBy: none
+		sourceColumn: abc_class
+
+		annotation SummarizationSetBy = Automatic
+
+	column shelf_life_days
+		dataType: int64
+		formatString: 0
+		lineageTag: 047cb0e6-acc5-4c51-b094-096ab9c7a2e1
+		summarizeBy: sum
+		sourceColumn: shelf_life_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column requires_cold_chain
+		dataType: string
+		lineageTag: d473d137-3bbb-4f6b-9b85-30eef7ba4579
+		summarizeBy: none
+		sourceColumn: requires_cold_chain
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_skus = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "skus.csv"),[Delimiter=",", Columns=13, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"sku_id", type text}, {"sku_code", type text}, {"product_name", type text}, {"category", type text}, {"subcategory", type text}, {"supplier_id", type text}, {"unit_cost_usd", type number}, {"unit_price_usd", type number}, {"unit_weight_kg", type number}, {"units_per_pallet", Int64.Type}, {"abc_class", type text}, {"shelf_life_days", Int64.Type}, {"requires_cold_chain", type text}}),
+				    #"Filtered Rows" = Table.SelectRows(#"Changed Type", each true)
+				in
+				    #"Filtered Rows"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

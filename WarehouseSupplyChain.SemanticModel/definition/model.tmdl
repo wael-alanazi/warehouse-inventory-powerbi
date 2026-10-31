@@ -1,0 +1,33 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+queryGroup REF
+
+	annotation PBI_QueryGroupOrder = 0
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["Fact_inventory_snapshots","Dim_skus","Fact_stock_movements","Dim_suppliers","Dim_warehouses","reconciliation","monthly_movements","_Measures","DataFolder"]
+
+annotation PBI_ProTooling = ["DaxQueryView_Desktop","DevMode"]
+
+ref table Fact_inventory_snapshots
+ref table DateTableTemplate_b362fb5b-1293-44f5-8dab-9e8f49a6acb0
+ref table LocalDateTable_b5b5ed9c-c056-47e5-a707-562ca289ca21
+ref table Dim_skus
+ref table Fact_stock_movements
+ref table LocalDateTable_468b0202-6bb8-4f00-a31b-3f709c8f9418
+ref table Dim_suppliers
+ref table Dim_warehouses
+ref table LocalDateTable_786ddde2-80a5-4f96-b6bf-dd40c452d777
+ref table Dim_Date
+ref table _Measures
+
+ref cultureInfo en-US
+

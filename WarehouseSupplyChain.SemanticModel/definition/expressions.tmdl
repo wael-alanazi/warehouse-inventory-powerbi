@@ -1,0 +1,45 @@
+expression reconciliation =
+		let
+		    Source = Fact_inventory_snapshots,
+		    #"Merged Queries" = Table.NestedJoin(Source, {"warehouse_id", "sku_id", "snapshot_month"}, monthly_movements, {"warehouse_id", "sku_id", "movement_month"}, "monthly_movements", JoinKind.LeftOuter),
+		    #"Expanded monthly_movements" = Table.ExpandTableColumn(#"Merged Queries", "monthly_movements", {"Issue", "Adjustment", "Receipt", "Scrap"}, {"Issue", "Adjustment", "Receipt", "Scrap"}),
+		    #"Added Custom" = Table.AddColumn(#"Expanded monthly_movements", "recon_check", each let
+		    r = if [Receipt] = null then 0 else [Receipt],
+		    i = if [Issue] = null then 0 else [Issue],
+		    a = if [Adjustment] = null then 0 else [Adjustment],
+		    s = if [Scrap] = null then 0 else [Scrap]
+		in
+		    if [receipts_quantity] <> r then "Receipt mismatch"
+		    else if [issues_quantity] = -i and [adjustments_quantity] = a and s = 0 then "OK"
+		    else if [issues_quantity] = -(i + s) and [adjustments_quantity] = a then "OK - scrap in issues"
+		    else if [issues_quantity] = -i and [adjustments_quantity] = a + s then "OK - scrap in adjustments"
+		    else "Mismatch"),
+		    #"Changed Type" = Table.TransformColumnTypes(#"Added Custom",{{"recon_check", type text}})
+		in
+		    #"Changed Type"
+	lineageTag: 69f86310-7758-4c9f-8fa0-470aa39920b4
+	queryGroup: REF
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Exception
+
+expression monthly_movements =
+		let
+		    Source = Fact_stock_movements,
+		    #"Removed Columns" = Table.RemoveColumns(Source,{"movement_date", "unit_cost_usd", "movement_value_usd", "supplier_id", "reason_code", "reference_document", "movement_id"}),
+		    #"Pivoted Column" = Table.Pivot(#"Removed Columns", List.Distinct(#"Removed Columns"[movement_type]), "movement_type", "quantity", List.Sum)
+		in
+		    #"Pivoted Column"
+	lineageTag: bec301c1-483b-4321-ac36-3758a12fcffc
+	queryGroup: REF
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Exception
+
+expression DataFolder = "C:\Data\warehouse\" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: e6ec1a5c-c60b-4c9b-aa06-0592e5122457
+
+	annotation PBI_ResultType = Text
+

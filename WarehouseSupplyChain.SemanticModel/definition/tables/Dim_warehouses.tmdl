@@ -1,0 +1,107 @@
+table Dim_warehouses
+	lineageTag: 44d883a4-98ca-4897-a98d-b1bd74e0b6aa
+
+	column warehouse_id
+		dataType: string
+		lineageTag: 11c007f4-edfc-4aa5-9471-03cac1c38867
+		summarizeBy: none
+		sourceColumn: warehouse_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column warehouse_name
+		dataType: string
+		lineageTag: 15dde512-3eac-4918-ac60-7f3e02a9a492
+		summarizeBy: none
+		sourceColumn: warehouse_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column country
+		dataType: string
+		lineageTag: aac26379-a70a-4e9c-a332-67e8cd0c6e5b
+		summarizeBy: none
+		sourceColumn: country
+
+		annotation SummarizationSetBy = Automatic
+
+	column region
+		dataType: string
+		lineageTag: 9c4fbadd-453e-4d62-95e5-ffcf10f76acd
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	column city
+		dataType: string
+		lineageTag: b6541979-1400-4709-ae78-0a683588e194
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column warehouse_type
+		dataType: string
+		lineageTag: 7e483b17-45cb-4dad-94df-28b0bffce34a
+		summarizeBy: none
+		sourceColumn: warehouse_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column storage_capacity_pallets
+		dataType: int64
+		formatString: 0
+		lineageTag: c0922b73-323e-400c-ac0b-f0b4cddce2c2
+		summarizeBy: sum
+		sourceColumn: storage_capacity_pallets
+
+		annotation SummarizationSetBy = Automatic
+
+	column temperature_controlled
+		dataType: string
+		lineageTag: c582f1e8-e414-47d3-95e4-34ded285fbb0
+		summarizeBy: none
+		sourceColumn: temperature_controlled
+
+		annotation SummarizationSetBy = Automatic
+
+	column operating_model
+		dataType: string
+		lineageTag: 0a6faf60-0776-436b-bb86-cc4a66ecaf58
+		summarizeBy: none
+		sourceColumn: operating_model
+
+		annotation SummarizationSetBy = Automatic
+
+	column opened_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 3b570a24-00e1-4627-be9f-2d50a5683ac4
+		summarizeBy: none
+		sourceColumn: opened_date
+
+		variation Variation
+			isDefault
+			relationship: eaff9578-95a5-4785-9eb5-c0c411cbe913
+			defaultHierarchy: LocalDateTable_786ddde2-80a5-4f96-b6bf-dd40c452d777.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition Dim_warehouses = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "warehouses.csv"),[Delimiter=",", Columns=10, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"warehouse_id", type text}, {"warehouse_name", type text}, {"country", type text}, {"region", type text}, {"city", type text}, {"warehouse_type", type text}, {"storage_capacity_pallets", Int64.Type}, {"temperature_controlled", type text}, {"operating_model", type text}, {"opened_date", type text}}),
+				    #"Changed Type with Locale" = Table.TransformColumnTypes(#"Changed Type", {{"opened_date", type date}}, "en-GB")
+				in
+				    #"Changed Type with Locale"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

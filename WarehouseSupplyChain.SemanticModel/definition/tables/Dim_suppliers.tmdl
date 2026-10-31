@@ -1,0 +1,85 @@
+table Dim_suppliers
+	lineageTag: d720101c-706c-4287-9584-83b68c6b29d1
+
+	column supplier_id
+		dataType: string
+		lineageTag: d8eeb743-3d86-4d27-983a-138d9faefd20
+		summarizeBy: none
+		sourceColumn: supplier_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column supplier_name
+		dataType: string
+		lineageTag: f35be1c6-8b5c-471a-9f46-8347aca2d757
+		summarizeBy: none
+		sourceColumn: supplier_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column country
+		dataType: string
+		lineageTag: f18c6181-b34d-4d10-b12b-a84d4cb46060
+		summarizeBy: none
+		sourceColumn: country
+
+		annotation SummarizationSetBy = Automatic
+
+	column region
+		dataType: string
+		lineageTag: fa3c62c9-d303-4947-a7d7-bfa7ce7343ed
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	column lead_time_days
+		dataType: int64
+		formatString: 0
+		lineageTag: 7765e6b8-8094-401e-b3f1-ac91a8b5d17b
+		summarizeBy: none
+		sourceColumn: lead_time_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column on_time_delivery_pct
+		dataType: double
+		lineageTag: 64e6120b-1352-4668-b22d-4ef946b64072
+		summarizeBy: none
+		sourceColumn: on_time_delivery_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column payment_terms_days
+		dataType: int64
+		formatString: 0
+		lineageTag: eddfefc7-ff0f-43bf-8033-4f3ba8a453ed
+		summarizeBy: none
+		sourceColumn: payment_terms_days
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_preferred
+		dataType: string
+		lineageTag: 568eaeee-f104-4d30-8d96-be80b8a8803e
+		summarizeBy: none
+		sourceColumn: is_preferred
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_suppliers = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "suppliers.csv"),[Delimiter=",", Columns=8, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"supplier_id", type text}, {"supplier_name", type text}, {"country", type text}, {"region", type text}, {"lead_time_days", Int64.Type}, {"on_time_delivery_pct", type number}, {"payment_terms_days", Int64.Type}, {"is_preferred", type text}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

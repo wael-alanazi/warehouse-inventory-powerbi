@@ -1,0 +1,43 @@
+relationship 3ddccbe6-be79-49d8-974e-7207a74ba5cf
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Fact_inventory_snapshots.month_end_date
+	toColumn: LocalDateTable_b5b5ed9c-c056-47e5-a707-562ca289ca21.Date
+
+relationship 8a1c5754-b177-4a4e-a3e0-69d50bad5377
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Fact_stock_movements.movement_date
+	toColumn: LocalDateTable_468b0202-6bb8-4f00-a31b-3f709c8f9418.Date
+
+relationship eaff9578-95a5-4785-9eb5-c0c411cbe913
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Dim_warehouses.opened_date
+	toColumn: LocalDateTable_786ddde2-80a5-4f96-b6bf-dd40c452d777.Date
+
+relationship 994c4026-a804-5a34-3fec-3390d2fc88b6
+	fromColumn: Fact_inventory_snapshots.warehouse_id
+	toColumn: Dim_warehouses.warehouse_id
+
+relationship 14a1595f-e45e-747e-a678-12fbb2263f3c
+	fromColumn: Fact_stock_movements.warehouse_id
+	toColumn: Dim_warehouses.warehouse_id
+
+relationship 065ff6ea-5664-cb27-bdf3-fa75b0f927d9
+	fromColumn: Fact_inventory_snapshots.sku_id
+	toColumn: Dim_skus.sku_id
+
+relationship 1e8a1082-a693-ce21-4ae6-5df83f275a04
+	fromColumn: Fact_stock_movements.sku_id
+	toColumn: Dim_skus.sku_id
+
+relationship b8497d60-46de-5918-a837-285978eff953
+	fromColumn: Dim_skus.supplier_id
+	toColumn: Dim_suppliers.supplier_id
+
+relationship b01dc16b-9390-8abd-5a55-e33621ebd45a
+	fromColumn: Fact_stock_movements.movement_month
+	toColumn: Dim_Date.Date
+
+relationship cdc61de7-9dd9-9d0f-6358-0c83264675d3
+	fromColumn: Fact_inventory_snapshots.snapshot_month
+	toColumn: Dim_Date.Date
+

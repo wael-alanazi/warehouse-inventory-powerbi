@@ -1,0 +1,148 @@
+// Warehouse & Supply Chain Intelligence - all measures
+// Paste into DAX query view, then click "Update model with changes".
+
+DEFINE
+
+    // ---------- 01 Movements (flow: adds up over time) ----------
+
+    MEASURE '_Measures'[Total Receipts Qty] =
+        CALCULATE (
+            SUM ( Fact_stock_movements[quantity] ),
+            Fact_stock_movements[movement_type] = "Receipt"
+        )
+
+    MEASURE '_Measures'[Total Issues Qty] =
+        - CALCULATE (
+            SUM ( Fact_stock_movements[quantity] ),
+            Fact_stock_movements[movement_type] = "Issue"
+        )
+
+    MEASURE '_Measures'[Total Scrap Qty] =
+        - CALCULATE (
+            SUM ( Fact_stock_movements[quantity] ),
+            Fact_stock_movements[movement_type] = "Scrap"
+        )
+
+    MEASURE '_Measures'[Net Adjustments Qty] =
+        CALCULATE (
+            SUM ( Fact_stock_movements[quantity] ),
+            Fact_stock_movements[movement_type] = "Adjustment"
+        )
+
+    MEASURE '_Measures'[Net Stock Change Qty] =
+        SUM ( Fact_stock_movements[quantity] )
+
+    MEASURE '_Measures'[Receipts Value USD] =
+        CALCULATE (
+            SUM ( Fact_stock_movements[movement_value_usd] ),
+            Fact_stock_movements[movement_type] = "Receipt"
+        )
+
+    MEASURE '_Measures'[Issues Value USD] =
+        - CALCULATE (
+            SUM ( Fact_stock_movements[movement_value_usd] ),
+            Fact_stock_movements[movement_type] = "Issue"
+        )
+
+    MEASURE '_Measures'[Scrap Value USD] =
+        - CALCULATE (
+            SUM ( Fact_stock_movements[movement_value_usd] ),
+            Fact_stock_movements[movement_type] = "Scrap"
+        )
+
+    // ---------- 02 Stock (semi-additive: last month only) ----------
+
+    MEASURE '_Measures'[Closing Stock Qty] =
+        VAR LastMonth = MAX ( Fact_inventory_snapshots[snapshot_month] )
+        RETURN
+            CALCULATE (
+                SUM ( Fact_inventory_snapshots[closing_quantity] ),
+                Fact_inventory_snapshots[snapshot_month] = LastMonth
+            )
+
+    MEASURE '_Measures'[Closing Stock Value] =
+        VAR LastMonth = MAX ( Fact_inventory_snapshots[snapshot_month] )
+        RETURN
+            CALCULATE (
+                SUM ( Fact_inventory_snapshots[closing_value_usd] ),
+                Fact_inventory_snapshots[snapshot_month] = LastMonth
+            )
+
+    MEASURE '_Measures'[SKUs Below Reorder] =
+        VAR LastMonth = MAX ( Fact_inventory_snapshots[snapshot_month] )
+        RETURN
+            CALCULATE (
+                COUNTROWS ( Fact_inventory_snapshots ),
+                Fact_inventory_snapshots[snapshot_month] = LastMonth,
+                Fact_inventory_snapshots[below_reorder_point] = "Yes"
+            )
+
+    MEASURE '_Measures'[% Below Reorder] =
+        VAR LastMonth = MAX ( Fact_inventory_snapshots[snapshot_month] )
+        VAR AllItems =
+            CALCULATE (
+                COUNTROWS ( Fact_inventory_snapshots ),
+                Fact_inventory_snapshots[snapshot_month] = LastMonth
+            )
+        RETURN
+            DIVIDE ( [SKUs Below Reorder], AllItems )
+
+    MEASURE '_Measures'[Avg Days of Cover] =
+        VAR LastMonth = MAX ( Fact_inventory_snapshots[snapshot_month] )
+        RETURN
+            CALCULATE (
+                AVERAGE ( Fact_inventory_snapshots[days_of_cover] ),
+                Fact_inventory_snapshots[snapshot_month] = LastMonth
+            )
+
+    MEASURE '_Measures'[SKUs No Demand] =
+        VAR LastMonth = MAX ( Fact_inventory_snapshots[snapshot_month] )
+        RETURN
+            CALCULATE (
+                COUNTROWS ( Fact_inventory_snapshots ),
+                Fact_inventory_snapshots[snapshot_month] = LastMonth,
+                ISBLANK ( Fact_inventory_snapshots[days_of_cover] )
+            )
+
+    // ---------- 03 Service (stockouts) ----------
+
+    MEASURE '_Measures'[Total Stockout Days] =
+        SUM ( Fact_inventory_snapshots[stockout_days] )
+
+    MEASURE '_Measures'[Stockout Item-Months] =
+        CALCULATE (
+            COUNTROWS ( Fact_inventory_snapshots ),
+            Fact_inventory_snapshots[stockout_days] > 0
+        )
+
+    MEASURE '_Measures'[Stockout Rate %] =
+        DIVIDE (
+            [Stockout Item-Months],
+            COUNTROWS ( Fact_inventory_snapshots )
+        )
+
+    // ---------- 04 Time intelligence ----------
+
+    MEASURE '_Measures'[Total Issues Qty PY] =
+        CALCULATE ( [Total Issues Qty], SAMEPERIODLASTYEAR ( Dim_Date[Date] ) )
+
+    MEASURE '_Measures'[Issues YoY %] =
+        DIVIDE ( [Total Issues Qty] - [Total Issues Qty PY], [Total Issues Qty PY] )
+
+    MEASURE '_Measures'[Closing Stock Qty PY] =
+        CALCULATE ( [Closing Stock Qty], SAMEPERIODLASTYEAR ( Dim_Date[Date] ) )
+
+    MEASURE '_Measures'[Closing Stock YoY %] =
+        DIVIDE ( [Closing Stock Qty] - [Closing Stock Qty PY], [Closing Stock Qty PY] )
+
+EVALUATE
+    ROW (
+        "Receipts", [Total Receipts Qty],
+        "Issues", [Total Issues Qty],
+        "Scrap", [Total Scrap Qty],
+        "Net Adjustments", [Net Adjustments Qty],
+        "Closing Stock", [Closing Stock Qty],
+        "Closing Value", [Closing Stock Value],
+        "Below Reorder", [SKUs Below Reorder],
+        "Stockout Days", [Total Stockout Days]
+    )

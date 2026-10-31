@@ -1,0 +1,122 @@
+table Fact_stock_movements
+	lineageTag: 161a2df8-4987-4628-8dc1-c21a61b5988d
+
+	column movement_id
+		dataType: string
+		lineageTag: 7219893f-90ce-4e22-8f64-33ec9392c2af
+		summarizeBy: none
+		sourceColumn: movement_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column movement_date
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: 89e7b798-25f5-4f6b-a1e3-11a9768d3a96
+		summarizeBy: none
+		sourceColumn: movement_date
+
+		variation Variation
+			isDefault
+			relationship: 8a1c5754-b177-4a4e-a3e0-69d50bad5377
+			defaultHierarchy: LocalDateTable_468b0202-6bb8-4f00-a31b-3f709c8f9418.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column movement_month
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e8f89cdc-8511-4b01-bc29-df888cec9141
+		summarizeBy: none
+		sourceColumn: movement_month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column warehouse_id
+		dataType: string
+		isHidden
+		lineageTag: c89a536f-f95e-4aec-80b4-56930bf12b70
+		summarizeBy: none
+		sourceColumn: warehouse_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sku_id
+		dataType: string
+		isHidden
+		lineageTag: 92cd2287-05a6-4857-ac2b-e5c03f2d295c
+		summarizeBy: none
+		sourceColumn: sku_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column movement_type
+		dataType: string
+		lineageTag: cef770be-b678-43f2-9a8f-bbc0df2f21be
+		summarizeBy: none
+		sourceColumn: movement_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 267d1e81-0074-4158-8b53-884e89499c58
+		summarizeBy: sum
+		sourceColumn: quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column movement_value_usd
+		dataType: double
+		lineageTag: 002e8fb3-b0ea-44b4-ae6e-1d306e9bff75
+		summarizeBy: sum
+		sourceColumn: movement_value_usd
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column reason_code
+		dataType: string
+		lineageTag: 91f897bf-89fa-4afa-8943-e6fe6d573594
+		summarizeBy: none
+		sourceColumn: reason_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column reference_document
+		dataType: string
+		lineageTag: ff65d9cb-53e6-46ae-a6d5-60ff512b2511
+		summarizeBy: none
+		sourceColumn: reference_document
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Fact_stock_movements = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "stock_movements.csv"),[Delimiter=",", Columns=12, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type with Locale" = Table.TransformColumnTypes(#"Promoted Headers", {{"movement_date", type date}, {"movement_month", type date}}, "en-GB"),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Changed Type with Locale",{{"quantity", Int64.Type}, {"unit_cost_usd", type number}, {"movement_value_usd", type number}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"unit_cost_usd", "supplier_id"})
+				in
+				    #"Removed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

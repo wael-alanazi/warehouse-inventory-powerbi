@@ -1,0 +1,107 @@
+table Dim_Date
+	lineageTag: 08451116-0092-47ba-8090-ce519cee82e3
+	dataCategory: Time
+
+	column Date
+		isKey
+		formatString: dd/mm/yyyy
+		lineageTag: 3ade988a-95dd-40b6-8c01-fd0dff202916
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Year
+		formatString: 0
+		lineageTag: 20401987-f204-4aa7-9ee4-52ce1994e562
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year]
+
+		annotation SummarizationSetBy = User
+
+	column 'Month Number'
+		formatString: 0
+		lineageTag: d7c3de1f-f3b9-4ffb-a3f2-746a678407c0
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month Number]
+
+		annotation SummarizationSetBy = User
+
+	column 'Month Name'
+		lineageTag: c256ccc5-9fe8-4918-804a-0c8234cdeedf
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month Name]
+		sortByColumn: 'Month Number'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Month'
+		lineageTag: 477c0c99-9ea5-419f-a58b-8b0f91b685bc
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year Month]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Start'
+		formatString: Long Date
+		lineageTag: 83efb2d2-fa57-4acd-b678-0bdcb8aaadb2
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month Start]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Quarter
+		lineageTag: 76279fd8-477c-4698-91cb-865d9562f187
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Quarter]
+
+		annotation SummarizationSetBy = Automatic
+
+	hierarchy Date_Hierarchy
+		lineageTag: b53b03f8-73bc-4118-9f32-448ca092171b
+
+		level Year
+			lineageTag: d0b57713-580e-4c44-9abd-63a2451e471d
+			column: Year
+
+		level Quarter
+			lineageTag: 9c39363f-04b6-444a-9dbb-cca5edff4cd1
+			column: Quarter
+
+		level 'Month Name'
+			lineageTag: 85d483c3-c80e-48cc-8a97-cc9ca3c4dfaf
+			column: 'Month Name'
+
+		level Date
+			lineageTag: 6bc6d5cf-300c-40b7-bf98-0004cd212b53
+			column: Date
+
+	partition Dim_Date = calculated
+		mode: import
+		source =
+				
+				ADDCOLUMNS (
+				    CALENDAR ( DATE ( 2024, 1, 1 ), DATE ( 2026, 6, 30 ) ),
+				    "Year", YEAR ( [Date] ),
+				    "Month Number", MONTH ( [Date] ),
+				    "Month Name", FORMAT ( [Date], "MMM" ),
+				    "Year Month", FORMAT ( [Date], "YYYY-MM" ),
+				    "Month Start", DATE ( YEAR ( [Date] ), MONTH ( [Date] ), 1 ),
+				    "Quarter", "Q" & QUARTER ( [Date] )
+				)
+
+	annotation PBI_Id = 1f7a1d6f7955428aa11182cb6a32f89c
+
